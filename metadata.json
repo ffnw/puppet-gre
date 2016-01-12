@@ -1,0 +1,15 @@
+{
+  "name": "ffnw-gre",
+  "version": "0.1.0",
+  "author": "Simon Kurka",
+  "summary": "Creates GRE tunnels with new interfaces.",
+  "license": "GPLv2",
+  "source": "https://github.com/ffnw/puppet-gre.git",
+  "project_page": "https://github.com/ffnw/puppet-gre",
+  "issues_url": "https://github.com/ffnw/puppet-gre/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+

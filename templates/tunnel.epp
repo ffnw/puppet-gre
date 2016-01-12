@@ -1,0 +1,12 @@
+auto <%= $interface %>
+iface <%= $interface %> inet static
+  address <%= $local_ip %>
+  netmask <%= $local_netmask %>
+  pre-up /sbin/ip tunnel add $IFACE mode gre local <%= $local_public_ip %> remote <%= $remote_public_ip %> ttl <%= $ttl %>
+  post-up   /sbin/ip link set $IFACE mtu <%= $tunnel_mtu %>
+  post-up   /sbin/sysctl -w net.ipv4.conf.$IFACE.rp_filter=<%= if $rp_filter { 1 } else { 0 } %>
+  pre-up    /sbin/ip rule add pref <%= $ip_rule_pref %> iif $IFACE table <%= $routing_table %>
+  pre-up    /sbin/ip rule add pref <%= $ip_rule_pref_unreachable %> iif $IFACE unreachable
+  post-down /sbin/ip rule del pref <%= $ip_rule_pref %> iif $IFACE table <%= $routing_table %>
+  post-down /sbin/ip rule del pref <%= $ip_rule_pref_unreachable %> iif $IFACE unreachable
+  post-down /sbin/ip tunnel del $IFACE
