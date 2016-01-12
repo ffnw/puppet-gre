@@ -15,13 +15,17 @@ define gre::tunnel (
   include gre
   include gre::params
 
-  file { '/etc/network/interfaces.d/${interface}':
-    content => epp('gre/tunnel.epp'),
-    owner   => 'root',
-    group   => 'root',
-    mode    => '600',
-    require => Package['iproute2'],
-    notify  => Service['networking'],
+  if ($local_public_ip == $remote_public_ip) {
+    notice('Skipping. Local and remote are the same.')
+  } else {
+    file { '/etc/network/interfaces.d/${interface}':
+      content => epp('gre/tunnel.epp'),
+      owner   => 'root',
+      group   => 'root',
+      mode    => '600',
+      require => Package['iproute2'],
+      notify  => Service['networking'],
+    }
   }
 
 }
