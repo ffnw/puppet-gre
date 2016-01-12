@@ -38,12 +38,12 @@ class { '::gre':
 
 gre::tunnel ( 'internal-srv01':
   remote_public_ip => '4.3.2.1',
-  local_ip => '2.3.4.5,
+  local_ip => '2.3.4.5',
 )
 
 gre::tunnel ( 'uplink-fra-a':
   remote_public_ip => '4.3.3.4',
-  local_ip => '2.3.3.2,
+  local_ip => '2.3.3.2',
 )
 ```
 
