@@ -1,14 +1,18 @@
 define gre::tunnel (
-  String[7,15]   $remote_public_ip,
-  String[7,15]   $local_ip,
-  Integer[0,32]  $local_netmask    = 31,
-  Integer        $tunnel_mtu       = 1476,
+  String         $remote_public_ip,
+  String         $local_ip,
+  String         $remote_ip,
+  String         $local_ip6        = undef,
+  Integer        $mtu              = 1476,
   Integer[0,255] $ttl              = 255,
-  Boolean        $rp_filter        = true,
+  Array[String]  $pre_up           = [],
+  Array[String]  $post_up          = [],
+  Array[String]  $pre_down         = [],
+  Array[String]  $post_down        = [],
 ) {
 
-  validate_re($remote_public_ip, '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
-  validate_re($local_ip, '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
+  validate_ip_address($remote_public_ip)
+  validate_ip_address($local_ip)
 
   $interface = 'gre-${title}'
 

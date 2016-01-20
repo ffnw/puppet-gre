@@ -38,13 +38,25 @@ class { '::gre':
 
 gre::tunnel ( 'internal-srv01':
   remote_public_ip => '4.3.2.1',
-  local_ip => '2.3.4.5',
+  local_ip => '2.3.4.5/31',
+  remote_ip => '2.3.4.4',
+  local_ip6 => 'fe80:1::2/64',
 )
 
 gre::tunnel ( 'uplink-fra-a':
   remote_public_ip => '4.3.3.4',
-  local_ip => '2.3.3.2',
-  rp_filter => false,
+  local_ip         => '2.3.3.2/31',
+  remote_ip        => '2.3.3.1',
+  local_ip6        => 'fe80:2::2/64',
+  pre_up           => [ '/sbin/ip rule add pref 31000 iif $IFACE table 42',
+                        '/sbin/ip rule add pref 31001 iif $IFACE unreachable',
+                        '/sbin/iptables -t nat -A POSTROUTING ! -s 2.3.3.2/31'
+                        + ' -o $IFACE -j SNAT --to-source 4.3.3.5' ],
+  post_up          => [ '/sbin/sysctl -w net.ipv4.conf.$IFACE.rp_filter=0' ],
+  post_down        => [ '/sbin/ip rule del pref 31000 iif $IFACE table 42',
+                        '/sbin/ip rule del pref 31001 iif $IFACE unreachable',
+                        '/sbin/iptables -t nat -D POSTROUTING ! -s 2.3.3.2/31'
+                        + ' -o $IFACE -j SNAT --to-source 4.3.3.5' ],
 )
 ```
 
@@ -52,17 +64,18 @@ gre::tunnel ( 'uplink-fra-a':
 
 * class gre
   * $local\_public\_ip
-  * $routing\_table (optional, default 42)
-  * $ip\_rule\_pref (optional, default 31000)
-  * $ip\_rule\_pref\_unreachable (optional, default $ip\_rule\_pref + 1)
 
 * define gre::tunnel
   * $remote\_public\_ip
-  * $local\_ip,
-  * $local\_netmask (optional, default 31)
-  * $tunnel\_mtu (optional, default 1476)
+  * $local\_ip
+  * $remote\_ip
+  * $local\_ip6 (optional)
+  * $mtu (optional, default 1476)
   * $ttl (optional, default 255)
-  * $rp\_filter (optional, default true)
+  * $pre\_up (optional, default [])
+  * $post\_up (optional, default [])
+  * $pre\_down (optional, default [])
+  * $post\_down (optional, default [])
 
 ## Limitations
 

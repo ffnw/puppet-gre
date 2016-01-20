@@ -1,12 +1,27 @@
 auto <%= $interface %>
-iface <%= $interface %> inet static
-  address <%= $local_ip %>
-  netmask <%= $local_netmask %>
-  pre-up /sbin/ip tunnel add $IFACE mode gre local <%= $local_public_ip %> remote <%= $remote_public_ip %> ttl <%= $ttl %>
-  post-up   /sbin/ip link set $IFACE mtu <%= $tunnel_mtu %>
-  post-up   /sbin/sysctl -w net.ipv4.conf.$IFACE.rp_filter=<%= if $rp_filter { 1 } else { 0 } %>
-  pre-up    /sbin/ip rule add pref <%= $ip_rule_pref %> iif $IFACE table <%= $routing_table %>
-  pre-up    /sbin/ip rule add pref <%= $ip_rule_pref_unreachable %> iif $IFACE unreachable
-  post-down /sbin/ip rule del pref <%= $ip_rule_pref %> iif $IFACE table <%= $routing_table %>
-  post-down /sbin/ip rule del pref <%= $ip_rule_pref_unreachable %> iif $IFACE unreachable
-  post-down /sbin/ip tunnel del $IFACE
+iface <%= $interface %> inet tunnel
+  address <%= ip_address($local_ip) %>
+  netmask <%= ip_prefixlength($local_ip) %>
+  local <%= ip_address($local_public_ip) %>
+  endpoint <%= ip_address($remote_public_ip) %>
+  dstaddr <%= ip_address($remote_ip) %>
+  ttl <%= $ttl %>
+  mtu <%= $mtu %>
+  <% $pre_up.each | $cmd | { -%>
+  pre-up    <%= $cmd %>
+  <% } -%>
+  <% $post_up.each | $cmd | { -%>
+  post-up   <%= $cmd %>
+  <% } -%>
+  <% $pre_down.each | $cmd | { -%>
+  pre-down  <%= $cmd %>
+  <% } -%>
+  <% $post_down.each | $cmd | { -%>
+  post-down <%= $cmd %>
+  <% } -%>
+
+<% if( is_ip_address($local_ip6) ) { -%>
+iface <%= $interface %> inet6 static
+  address <%= ip_address($local_ip6) %>
+  netmask <%= ip_prefixlength($local_ip6) %>
+<% } -%>
